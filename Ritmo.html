@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎵 Musikspaß für Kinder 🎵</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
+            --app-bg: #ffffff;
+            --text-color: #2d3436;
+            --primary-color: #ff6b6b;
+            --primary-shadow: #d63031;
+            --accent-color: #00cec9;
+            --accent-shadow: #00b894;
+            --clear-color: #b2bec3;
+            --clear-shadow: #636e72;
+            --highlight-color: #ffeaa7;
+            --track-bg: rgba(255, 255, 255, 0.4);
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* Contenedor principal estilo tarjeta */
+        .app-container {
+            background-color: var(--app-bg);
+            border-radius: 30px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+        }
+
+        header h1 {
+            color: var(--primary-color);
+            font-size: 2.8em;
+            font-weight: 900;
+            margin-top: 0;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 0px rgba(0,0,0,0.05);
+        }
+
+        .instrucciones {
+            font-size: 1.2em;
+            color: #636e72;
+            margin-bottom: 30px;
+            font-weight: 700;
+        }
+
+        /* Paleta de botones (Estilo 3D) */
+        .botones-paleta {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .btn-nota {
+            background-color: white;
+            border: 3px solid var(--accent-color);
+            border-radius: 20px;
+            padding: 15px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 130px;
+            box-shadow: 0 8px 0 var(--accent-shadow);
+            transition: all 0.1s ease;
+        }
+
+        .btn-nota:active {
+            transform: translateY(8px);
+            box-shadow: 0 0px 0 var(--accent-shadow);
+        }
+
+        .btn-nota img {
+            width: 70px;
+            height: 70px;
+            object-fit: contain;
+            margin-bottom: 10px;
+            border-radius: 10px;
+        }
+
+        .btn-nota span {
+            font-weight: 800;
+            font-size: 14px;
+            line-height: 1.2;
+            color: var(--text-color);
+        }
+
+        /* Contenedor de la secuencia (Estilo Glassmorphism) */
+        #secuencia-container {
+            background: var(--track-bg);
+            backdrop-filter: blur(10px);
+            min-height: 130px;
+            border: 3px dashed #74b9ff;
+            border-radius: 25px;
+            padding: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 40px;
+            box-shadow: inset 0 5px 15px rgba(0,0,0,0.03);
+        }
+
+        .nota-en-secuencia {
+            width: 80px;
+            height: 80px;
+            border-radius: 15px;
+            background-color: white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .nota-en-secuencia img {
+            width: 80%;
+            height: 80%;
+            object-fit: contain;
+        }
+
+        /* Animación cuando la nota está sonando */
+        @keyframes latido {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 234, 167, 0.7); }
+            50% { transform: scale(1.2); box-shadow: 0 0 0 15px rgba(255, 234, 167, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 234, 167, 0); }
+        }
+
+        .nota-activa {
+            background-color: var(--highlight-color);
+            border: 3px solid #fdcb6e;
+            animation: latido 0.3s ease-in-out;
+            z-index: 10;
+        }
+
+        /* Controles inferiores (Botones de acción) */
+        .controles {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .btn-control {
+            font-size: 1.3em;
+            font-family: 'Nunito', sans-serif;
+            padding: 15px 35px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 900;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.1s ease;
+        }
+
+        .btn-play { 
+            background-color: var(--primary-color);
+            box-shadow: 0 8px 0 var(--primary-shadow);
+        }
+        
+        .btn-play:active {
+            transform: translateY(8px);
+            box-shadow: 0 0px 0 var(--primary-shadow);
+        }
+
+        .btn-clear { 
+            background-color: var(--clear-color);
+            box-shadow: 0 8px 0 var(--clear-shadow);
+        }
+
+        .btn-clear:active {
+            transform: translateY(8px);
+            box-shadow: 0 0px 0 var(--clear-shadow);
+        }
+
+    </style>
+</head>
+<body>
+
+    <main class="app-container">
+        <header>
+            <h1>✨ Lass uns Musik machen! ✨</h1>
+            <p class="instrucciones">Klicke auf die Bilder, um deine Rhythmus-Sequenz zu bauen. Drücke dann auf "Abspielen"!</p>
+        </header>
+
+        <section class="botones-paleta">
+            <button class="btn-nota" onclick="agregarNota('aplauso')">
+                <img src="Palmada - negra.jpeg" alt="Klatschen" onerror="this.src='https://via.placeholder.com/80/ffffff/000000?text=👏'">
+                <span>Klatschen<br>(Viertelnote)</span>
+            </button>
+            <button class="btn-nota" onclick="agregarNota('pisada')">
+                <img src="Pie- corcheas.jpeg" alt="Stampfen" onerror="this.src='https://via.placeholder.com/80/ffffff/000000?text=👣'">
+                <span>Stampfen<br>(Achtelnoten)</span>
+            </button>
+            <button class="btn-nota" onclick="agregarNota('silencio')">
+                <img src="Gato - silencio.jpeg" alt="Stille" onerror="this.src='https://via.placeholder.com/80/ffffff/000000?text=🤫'">
+                <span>Katze<br>(Pssst!)</span>
+            </button>
+        </section>
+
+        <section id="secuencia-container">
+        </section>
+
+        <section class="controles">
+            <button class="btn-control btn-play" onclick="reproducirSecuencia()">▶️ Abspielen</button>
+            <button class="btn-control btn-clear" onclick="limpiarSecuencia()">🗑️ Löschen</button>
+        </section>
+    </main>
+
+    <script>
+        let secuencia = [];
+        const BPM = 60; 
+        const tiempoPorBeat = (60 / BPM) * 1000;
+
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx;
+
+        const emojisFallback = {
+            aplauso: '👏',
+            pisada: '👣',
+            silencio: '🤫'
+        };
+
+        const imagenes = {
+            aplauso: 'Palmada - negra.jpeg',
+            pisada: 'Pie- corcheas.jpeg',
+            silencio: 'Gato - silencio.jpeg'
+        };
+
+        function iniciarAudio() {
+            if (!audioCtx) {
+                audioCtx = new AudioContext();
+            }
+        }
+
+        function agregarNota(tipo) {
+            secuencia.push(tipo);
+            actualizarPantalla();
+        }
+
+        function limpiarSecuencia() {
+            secuencia = [];
+            actualizarPantalla();
+        }
+
+        function actualizarPantalla() {
+            const contenedor = document.getElementById('secuencia-container');
+            contenedor.innerHTML = '';
+            
+            secuencia.forEach((nota) => {
+                const div = document.createElement('div');
+                div.className = 'nota-en-secuencia';
+                
+                const img = document.createElement('img');
+                img.src = imagenes[nota];
+                img.alt = nota;
+                
+                img.onerror = () => img.src = `https://via.placeholder.com/80/ffffff/000000?text=${emojisFallback[nota]}`;
+                
+                div.appendChild(img);
+                contenedor.appendChild(div);
+            });
+        }
+
+        function crearRuidoBlanco(tiempo, duracion) {
+            const bufferSize = audioCtx.sampleRate * duracion;
+            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+                data[i] = Math.random() * 2 - 1;
+            }
+            const noise = audioCtx.createBufferSource();
+            noise.buffer = buffer;
+            return noise;
+        }
+
+        function sonidoAplauso(tiempo) {
+            const noise = crearRuidoBlanco(tiempo, 0.1);
+            const filter = audioCtx.createBiquadFilter();
+            const gain = audioCtx.createGain();
+
+            filter.type = 'bandpass';
+            filter.frequency.setValueAtTime(1200, tiempo);
+
+            gain.gain.setValueAtTime(0.8, tiempo);
+            gain.gain.exponentialRampToValueAtTime(0.01, tiempo + 0.1);
+
+            noise.connect(filter);
+            filter.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            noise.start(tiempo);
+            noise.stop(tiempo + 0.1);
+        }
+
+        function sonidoPisada(tiempo) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(150, tiempo);
+            osc.frequency.exponentialRampToValueAtTime(0.01, tiempo + 0.15);
+            
+            gain.gain.setValueAtTime(1, tiempo);
+            gain.gain.exponentialRampToValueAtTime(0.001, tiempo + 0.15);
+            
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            osc.start(tiempo);
+            osc.stop(tiempo + 0.15);
+        }
+
+        function sonidoSilencio(tiempo) {
+            const noise = crearRuidoBlanco(tiempo, 0.3);
+            const filter = audioCtx.createBiquadFilter();
+            const gain = audioCtx.createGain();
+
+            filter.type = 'highpass';
+            filter.frequency.setValueAtTime(3000, tiempo);
+
+            gain.gain.setValueAtTime(0, tiempo);
+            gain.gain.linearRampToValueAtTime(0.3, tiempo + 0.05);
+            gain.gain.exponentialRampToValueAtTime(0.01, tiempo + 0.3);
+
+            noise.connect(filter);
+            filter.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            noise.start(tiempo);
+            noise.stop(tiempo + 0.3);
+        }
+
+        async function reproducirSecuencia() {
+            if (secuencia.length === 0) return;
+            
+            iniciarAudio();
+            if (audioCtx.state === 'suspended') await audioCtx.resume();
+
+            const elementosDOM = document.querySelectorAll('.nota-en-secuencia');
+            const tiempoInicio = audioCtx.currentTime + 0.1;
+
+            secuencia.forEach((nota, index) => {
+                const tiempoBeat = tiempoInicio + (index * (tiempoPorBeat / 1000));
+
+                setTimeout(() => {
+                    elementosDOM.forEach(el => el.classList.remove('nota-activa'));
+                    if(elementosDOM[index]) {
+                        // Forzamos el reinicio de la animación CSS
+                        elementosDOM[index].classList.remove('nota-activa');
+                        void elementosDOM[index].offsetWidth; 
+                        elementosDOM[index].classList.add('nota-activa');
+                    }
+                }, index * tiempoPorBeat);
+
+                if (nota === 'aplauso') {
+                    sonidoAplauso(tiempoBeat);
+                } else if (nota === 'pisada') {
+                    sonidoPisada(tiempoBeat); 
+                    sonidoPisada(tiempoBeat + (tiempoPorBeat / 2000)); 
+                } else if (nota === 'silencio') {
+                    sonidoSilencio(tiempoBeat);
+                }
+            });
+
+            setTimeout(() => {
+                elementosDOM.forEach(el => el.classList.remove('nota-activa'));
+            }, secuencia.length * tiempoPorBeat);
+        }
+    </script>
+</body>
+</html>
