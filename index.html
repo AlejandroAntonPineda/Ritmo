@@ -156,6 +156,7 @@
             font-weight: 900;
             color: white;
             transition: all 0.1s ease;
+            width: 200px; /* Ancho fijo para que el texto no cambie el tamaño del botón */
         }
 
         .btn-play { background-color: var(--primary-color); box-shadow: 0 8px 0 var(--primary-shadow); }
@@ -236,7 +237,7 @@
         </section>
 
         <section class="controles">
-            <button class="btn-control btn-play" onclick="reproducirSecuencia()">▶️ Abspielen</button>
+            <button class="btn-control btn-play" id="btn-play-pause" onclick="alternarReproduccion()">▶️ Abspielen</button>
             <button class="btn-control btn-clear" onclick="limpiarSecuencia()">🗑️ Löschen</button>
         </section>
 
@@ -264,6 +265,10 @@
         const BPM = 60; 
         const tiempoPorBeat = (60 / BPM) * 1000;
         let audioCtx;
+        
+        // --- NUEVAS VARIABLES PARA CONTROLAR REPRODUCCIÓN ---
+        let reproduccionActiva = false;
+        let timeoutsActivos = [];
 
         const imagenes = {
             aplauso: 'Palmada - negra.jpeg',
@@ -273,12 +278,11 @@
 
         const emojisFallback = { aplauso: '👏', pisada: '👣', silencio: '🤫' };
 
-        // Función de descarga segura (no quita el juego)
         function descargarImagen(url, nombreArchivo) {
             const link = document.createElement('a');
             link.href = url;
             link.download = nombreArchivo;
-            link.target = '_blank'; // Esto asegura que, en el peor de los casos, se abra en otra pestaña sin cerrar el juego
+            link.target = '_blank';
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -296,6 +300,7 @@
         }
 
         function limpiarSecuencia() {
+            detenerReproduccion(); // Nos aseguramos de detener el audio si se está reproduciendo
             secuencia = [];
             actualizarPantalla();
         }
@@ -314,6 +319,48 @@
             });
         }
 
+        // --- NUEVAS FUNCIONES DE CONTROL ---
+        async function alternarReproduccion() {
+            if (secuencia.length === 0) return;
+
+            const btnPlay = document.getElementById('btn-play-pause');
+
+            if (reproduccionActiva) {
+                // Si ya está reproduciendo, lo detenemos (Pausa)
+                detenerReproduccion();
+            } else {
+                // Si no, iniciamos la reproducción
+                reproduccionActiva = true;
+                btnPlay.innerHTML = '⏸️ Pause';
+                btnPlay.style.backgroundColor = '#e17055'; // Color de pausa opcional
+                btnPlay.style.boxShadow = '0 8px 0 #d63031';
+                await reproducirSecuencia();
+            }
+        }
+
+        function detenerReproduccion() {
+            reproduccionActiva = false;
+            
+            // Cancelar todas las animaciones visuales programadas
+            timeoutsActivos.forEach(timeout => clearTimeout(timeout));
+            timeoutsActivos = [];
+
+            // Quitar los marcos visuales de inmediato
+            document.querySelectorAll('.nota-en-secuencia').forEach(el => el.classList.remove('nota-activa'));
+
+            // Reiniciar el contexto de audio para cortar los sonidos inmediatamente
+            if (audioCtx) {
+                audioCtx.close(); 
+                audioCtx = null; // Fuerza a crear uno nuevo en el próximo clic
+            }
+
+            // Restaurar el botón a Play
+            const btnPlay = document.getElementById('btn-play-pause');
+            btnPlay.innerHTML = '▶️ Abspielen';
+            btnPlay.style.backgroundColor = 'var(--primary-color)';
+            btnPlay.style.boxShadow = '0 8px 0 var(--primary-shadow)';
+        }
+
         function crearRuidoBlanco(duracion) {
             const bufferSize = audioCtx.sampleRate * duracion;
             const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
@@ -325,6 +372,7 @@
         }
 
         function sonidoAplauso(tiempo) {
+            if (!audioCtx) return;
             const noise = crearRuidoBlanco(0.1);
             const filter = audioCtx.createBiquadFilter();
             const gain = audioCtx.createGain();
@@ -336,6 +384,7 @@
         }
 
         function sonidoPisada(tiempo) {
+            if (!audioCtx) return;
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.frequency.setValueAtTime(150, tiempo);
@@ -347,6 +396,7 @@
         }
 
         function sonidoSilencio(tiempo) {
+            if (!audioCtx) return;
             const noise = crearRuidoBlanco(0.3);
             const gain = audioCtx.createGain();
             gain.gain.setValueAtTime(0, tiempo);
@@ -357,7 +407,6 @@
         }
 
         async function reproducirSecuencia() {
-            if (secuencia.length === 0) return;
             iniciarAudio();
             if (audioCtx.state === 'suspended') await audioCtx.resume();
 
@@ -367,10 +416,14 @@
             secuencia.forEach((nota, index) => {
                 const tiempoBeat = tiempoInicio + (index * (tiempoPorBeat / 1000));
                 
-                setTimeout(() => {
+                // Guardar los setTimeout en el arreglo para poder cancelarlos si se pausa
+                const t = setTimeout(() => {
+                    if (!reproduccionActiva) return; // Validación extra
                     elementosDOM.forEach(el => el.classList.remove('nota-activa'));
                     if(elementosDOM[index]) elementosDOM[index].classList.add('nota-activa');
                 }, index * tiempoPorBeat);
+                
+                timeoutsActivos.push(t);
 
                 if (nota === 'aplauso') sonidoAplauso(tiempoBeat);
                 else if (nota === 'pisada') {
@@ -380,9 +433,15 @@
                 else if (nota === 'silencio') sonidoSilencio(tiempoBeat);
             });
 
-            setTimeout(() => {
-                elementosDOM.forEach(el => el.classList.remove('nota-activa'));
+            // Timer para volver el botón a su estado original al terminar
+            const tFinal = setTimeout(() => {
+                if (reproduccionActiva) {
+                    elementosDOM.forEach(el => el.classList.remove('nota-activa'));
+                    detenerReproduccion();
+                }
             }, secuencia.length * tiempoPorBeat);
+            
+            timeoutsActivos.push(tFinal);
         }
     </script>
 </body>
